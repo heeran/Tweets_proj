@@ -1,0 +1,16 @@
+
+1. read json file by using UDF
+readjson=fn(filename) read(file("/home/labfiles/tweetter/"+filename));
+
+2, read json file (extract nececery information)
+hashtags = readjson("hashtags.json");
+lang = readjson("lang.json");
+
+3. test some operations (filtering, grouping, join, using hadoop fs)
+lang -> filter $.lang == 'en';
+
+lang -> group by lang = $.lang into { lang, num_lang : count ($)};
+
+join_result = join h in hashtags , l in lang where h.id == l.id into {l.id , h.hashtags};
+
+join_result -> write(jsonTextFile("file:///home/labfiles/tweetter/join_result.json"));
