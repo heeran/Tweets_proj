@@ -14,3 +14,31 @@ lang -> group by lang = $.lang into { lang, num_lang : count ($)};
 join_result = join h in hashtags , l in lang where h.id == l.id into {l.id , h.hashtags};
 
 join_result -> write(jsonTextFile("file:///home/labfiles/tweetter/join_result.json"));
+
+4. use expanded query for complex questions. 
+
+1) find most popular keyword : I use the hashtag item. 
+
+	1_1) filter and extract data which have values in the hash tag key and written in english. 
+
+		en_keyword = hashtags -> filter count($.entities_hashtags[*].text) > 1 -> filter $.lang == 'en' ;
+
+	1_2) flat the whole keyword for word_count 
+
+		flat_keyword = en_keyword -> transform $.entities_hashtags[*].text -> expand;
+
+	1_3) save the keyword data.
+
+		flat_keyword -> group by keyword = $ into { keyword , keyword_count : count($)} -> write(jsonTextFile("file:///home/labfiles/tweetter/keyword_result.json")); 
+
+2) language ranking sorting
+
+	2_1) count language 
+
+		lang_count = lang -> group by lang = $.lang into { lang, num_lang : count ($)};
+
+	2_2) sort by language count 
+
+		lang_count -> sort by [count($.num_lang) asc] -> write(jsonTextFile("file:///home/labfiles/tweetter/lang_result.json"));
+
+3) 
