@@ -1,0 +1,48 @@
+Mongo DB how to start 
+
+1.JSON file imort 
+
+$ mongoimport --db mydb --collection docs --file example.json
+
+2.Query 
+$ db.tweet.find(); -> search all tweet collection 
+
+$ db.tweet.find({}, {“text” : 1 } ) 
+• show "text" value on whole tweet collection 
+
+$ db.tweet.find({}, {"text" : 1});
+ { "_id" : ObjectId("53e30d1a4505875b40aab246"), "text" : "Ma prof d'SVT vient de me rentrer un 1/8 sur pronote... #connasse" }
+ { "_id" : ObjectId("53e30d1a4505875b40aab247"), "text" : "I'm a girl, 18 years old, implant. Must be pregnant!! Fuck off." }
+ { "_id" : ObjectId("53e30d1a4505875b40aab24a"), "text" : "Work tanning nails laundry😍" }
+......
+
+$ db.tweet.find({“retweet_count”: { “$gt” : 1 }})
+• result is data that is retweet_count more than 1 
+• “$lt”, “$lte”, “$gt”,“$gte”
+
+$ db.tweet.find({“retweet_count”: { “$in” : [1, 2, 3] }})
+• Retweet_count is among 1, 2, 3 
+
+$ db.tweet.find({“$or” : [{“retweet_count” : { “$gt” : 1}, “retweeted” : false}]})
+• $not
+
+$ db.tweet.find({"user.lang" : "en"}, {"text" : 1, "_id" : 0}) 
+• find text data and id data which's language code is en
+
+
+3. Cursor
+
+> var cursor = db.tweet.find({"user.lang" : "en"}, {"text" : 
+1, "_id" : 0}).limit(3)
+
+> cursor.forEach(function(x) {
+ ... print(x.text);
+
+ ... });
+
+•result
+ I'm a girl, 18 years old, implant. Must be pregnant!! Fuck off.
+ Work tanning nails laundry😍
+ @ipermie ไปไมวะะะะ
+
+
