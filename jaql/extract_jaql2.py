@@ -28,6 +28,13 @@ def scan_dictionary(my_dict, search_key):
   else:
     return result
 
+def delete_lastline_comma(filename):
+  with open(filename,"r+") as myfile:
+   lines = myfile.readlines()
+   myfile.writelines([item for item in lines[:-1]]) #delete last line 
+   myfile.writelines("]")
+   myfile.close()
+
 def parse_file(filename, output, list_of_keys):
   with open(filename, "r") as myfile, open(output, "wb") as myout:
     myout.write("[")
@@ -36,6 +43,8 @@ def parse_file(filename, output, list_of_keys):
       json.dump(filtered_tweet, myout)
       myout.write("\n,")
     myout.write("]")
+  myout.close()
+  delete_lastline_comma(output)
 
 if __name__ == "__main__":
    if len(sys.argv) < 3:

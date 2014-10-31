@@ -1,0 +1,79 @@
+1. Group the Tweets by language/geographical region and count the number in each group.
+4euzh  1) extract file as jaql format : ./extract_jaql.py /media/heeran/6653DFF74839CDCB/Tweets/1_2013/1_7.json 1_7_jaql_2013.json
+2) make UDF  : readjson=fn(filename) read(file("/home/biadmin/"+filename));
+3) read twitter/json file (full format) : twitter_1_7_2013 = readjson("1_7_jaql_2013.json");
+4) transform : lang_geo = twitter_1_7_2013 -> transfrom { lang : $.lang, id :$.id};
+5) groupping : lang_count = lang_geo-> group by lang = $.lang into {lang : lang , num_lang : count ($)};
+6) lang_count -> sort by [$.num_lang desc] -> write(jsonTextFile("file:///home/labfiles/tweeter/lang_count_result.json")); 
+lang_geo -> group by geo = $.geo into { geo.coordinates }; //working 
+
+2. Find the top-k popular hashtags in the Tweets between date=x to date=y.
+1) extract file as jaql format / read using udf / transforms below format
+[
+   {
+      "entities_hashtags":[
+
+      ],
+      "id":1111,
+      "created_at":"Fri Feb 01 17:12:46 +0000 2013"
+   },
+   {
+      "created_at":"Thu Jan 10 17:52:00 +0000 2013",
+      "id":289429398753538051,
+      "entities__hashtags":[
+         {
+            "indices":[
+               0,
+               23
+            ],
+            "text":"YoMeJuramentoConChavez"
+         },
+         {
+            "indices":[
+               26,
+               49
+            ],
+            "text":"YoMeJuramentoConChavez"
+         },
+         {
+            "indices":[
+               52,
+               75
+            ],
+            "text":"YoMeJuramentoConChavez"
+         }
+      ]
+   }
+]
+
+3) 
+jaql> readjson=fn(filename) read(file("/home/biadmin/"+filename));
+jaql> twitter_1_7_2013 = readjson("1_7_jaql.json");
+jaql> keyword = twitter_1_7_2013 -> transform {text : $.entities.hashtags[*].text};
+jaql> keyword = keyword -> filter count($.text) > 1; 
+jaql> keyword -> top 10 -> group by keyword = $ into { keyword , keyword_count : count($)} -> write(jsonTextFile("file:///home/biadmin/keyword_result.json"));
+
+* filter by date
+$people
+-> filter by $.birthdate < date(‘1990-01-01’)
+-> aggregate count($);	 // count the older people
+
+
+3. Order the users by their follower count.
+1) extract file as jaql format / read using udf / transforms below format
+   {"user_followers_count" : 82, "user_id" :1111}
+2) transform : followers_count = twitter_1_7_2013 -> transform { followers_count : $.user.followers_count, id :$.id};
+2) followers_count -> sort by [$.followers_count desc];
+
+
+4. Find Tweets containing a group of keywords and hashtags and order then by the retweet count.
+1) extract file as jaql format / read using udf / transforms below format
+   {"entities_hashtags" : [ ], "retweet_count" : 0, id : 1111}
+2) keyword_retweetcount = readjson("keyword_retweetcount.json");
+3) keyword_retweetcount = keyword_retweetcount -> filter count($.entities__hashtags[*].text) > 1;//filter the keyword exited data
+4) keyword_retweetcount = keyword_retweetcount -> transform { id : $.id , text : $.entities__hashtags[*].text, retweet_count : $.retweet_count};
+5) keyword_retweetcount = keyword_retweetcount-> group by keyword = $ into { keyword , keyword_count : count ($) , $.id, $.retweet_count};
+6) keyword_retweetcount = keyword_retweetcount-> sort by [$.retweet_count desc] ;
+7) keyword_retweetcount-> write(jsonTextFile("file:///home/labfiles/tweeter/retweet_result.json")) ; 
+
+

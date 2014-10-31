@@ -10,7 +10,7 @@ def parse_tweet_json(tweet, list_of_keys):
   # a filtered tweet using a dictionary
   filtered_tweet = {}  
   for mykey in list_of_keys:
-    search_key = mykey.split('#')
+    search_key = mykey.split('__')
 
     # simple keys
     #myvalue = parsed_tweet.get(mykey)
